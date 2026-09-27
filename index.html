@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0d1b2a">
+<link rel="manifest" href="manifest.json"><title>📿 挂饰生意管家</title><style>:root{--bg:#0d1b2a;--bg2:#12263f;--card:#16304d;--gold:#e8c872;--gold2:#c9a24d;
+--txt:#e8eef5;--sub:#8fa3b8;--line:#23415f;--red:#e06c60;--green:#7bc98a;--blue:#6ea8d8;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",sans-serif;min-height:100vh;padding-bottom:70px}
+.wrap{max-width:760px;margin:0 auto;padding:14px}
+h1{font-size:21px;letter-spacing:3px;color:var(--gold);text-align:center;padding:14px 0 4px}
+.sub{text-align:center;color:var(--sub);font-size:12px;padding-bottom:12px}
+.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--line);display:flex;z-index:99;height:58px}
+.tabs button{flex:1;background:none;border:none;color:var(--sub);font-size:11px;padding:6px 0 2px;cursor:pointer}
+.tabs button.on{color:var(--gold)}
+.tabs button .ic{font-size:19px;display:block;margin-bottom:2px}
+.page{display:none}.page.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h3{color:var(--gold);font-size:15px;margin-bottom:10px;letter-spacing:1px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:9px 10px;font-size:14px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+.btn{background:linear-gradient(135deg,#1a2f47,#25405f);color:var(--gold);border:1px solid var(--gold2);border-radius:9px;padding:9px 16px;font-size:14px;cursor:pointer}
+.btn:active{opacity:.75}.btn.gold{background:linear-gradient(135deg,#8a6a2f,#b8934a);color:#fff;border:none}
+.btn.sm{padding:5px 10px;font-size:12px}.btn.red{border-color:var(--red);color:var(--red);background:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat{background:var(--bg);border-radius:10px;padding:10px;text-align:center}
+.stat b{display:block;font-size:18px;color:var(--gold)}.stat span{font-size:11px;color:var(--sub)}
+.item{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px}
+.item .m{font-size:11px;color:var(--sub);margin-top:4px}
+.tag{display:inline-block;font-size:10px;background:#1c3a5e;color:var(--gold);border-radius:6px;padding:2px 7px;margin:2px 4px 2px 0}
+.tag.warn{background:#5e2a1c;color:#f0a090}.tag.ok{background:#1c4d33;color:#8fe0a8}
+.empty{color:var(--sub);text-align:center;padding:20px;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--gold);font-weight:normal}
+select{appearance:none}
+@media(min-width:760px){.tabs{max-width:760px;margin:0 auto}}
+</style></head>
+<body><div class="wrap">
+<h1>📿 挂饰生意管家</h1><div class="sub">进销存+分销佣金 ｜ 数据在本机浏览器 · 免费 · 断电不丢</div>
+
+<div class="page on" id="p-home"><div class="card"><h3>📊 经营总览</h3><div class="grid4" id="dash"></div></div>
+<div class="card"><h3>⚠️ 低库存预警</h3><div id="low-list"></div></div></div>
+
+<div class="page" id="p-prod"><div class="card"><h3>📦 新增商品（编号自动生成）</h3>
+<div class="row"><input id="g-name" placeholder="品名（如 平安流苏汽车挂饰）" style="flex:3">
+<select id="g-cat" style="flex:2"><option>汽车挂饰</option><option>手机挂饰</option><option>包包挂饰</option><option>衣服挂饰</option><option>宠物挂饰</option></select></div>
+<div class="row"><input id="g-cost" type="number" placeholder="成本" style="flex:1">
+<input id="g-price" type="number" placeholder="售价" style="flex:1">
+<input id="g-stock" type="number" placeholder="初始库存" style="flex:1">
+<input id="g-low" type="number" placeholder="预警线" value="5" style="flex:1"></div>
+<button class="btn gold" onclick="addProd()">保存商品</button></div>
+<div class="card"><h3>🗃 商品库存</h3><div id="prod-list"></div></div></div>
+
+<div class="page" id="p-stock"><div class="card"><h3>📥 入库 / 📤 出库 / 📋 盘点</h3>
+<div class="row"><select id="s-sku" style="flex:3"></select>
+<input id="s-qty" type="number" placeholder="数量" value="10" style="flex:1"></div>
+<div class="row"><button class="btn" onclick="stockIO(1)">➕ 入库</button>
+<button class="btn" onclick="stockIO(-1)">➖ 出库</button></div>
+<div class="row"><input id="s-actual" type="number" placeholder="实盘数量（盘点用）" style="flex:2">
+<button class="btn" onclick="stockCheck()">📋 盘点校准</button></div></div>
+<div class="card"><h3>🧾 最近流水</h3><div id="flow-list"></div></div></div>
+
+<div class="page" id="p-dist"><div class="card"><h3>🤝 添加分销商</h3>
+<div class="row"><input id="d-name" placeholder="姓名（如 张姐）" style="flex:2">
+<input id="d-rate" type="number" placeholder="佣金%（如15）" value="15" style="flex:1"></div>
+<button class="btn gold" onclick="addDist()">添加</button></div>
+<div class="card"><h3>👥 分销商列表</h3><div id="dist-list"></div></div></div>
+
+<div class="page" id="p-order"><div class="card"><h3>🧾 分销下单（自动扣库存+算佣金）</h3>
+<div class="row"><select id="o-dist" style="flex:2"></select>
+<select id="o-sku" style="flex:2"></select>
+<input id="o-qty" type="number" placeholder="数量" value="1" style="flex:1"></div>
+<div class="row"><input id="o-price" type="number" placeholder="成交价（留空用售价）" style="flex:2">
+<button class="btn gold" onclick="addOrder()">下单</button></div></div>
+<div class="card"><h3>💰 待结算</h3><div id="order-open"></div></div>
+<div class="card"><h3>📄 全部订单</h3><div id="order-all"></div></div></div>
+
+<div class="page" id="p-me"><div class="card"><h3>⚙️ 数据</h3>
+<div class="row"><button class="btn" onclick="exportData()">📤 导出备份</button>
+<button class="btn" onclick="document.getElementById('imp').click()">📥 导入</button>
+<input type="file" id="imp" style="display:none" onchange="importData(event)"></div>
+<div style="font-size:12px;color:var(--sub);margin-top:8px;line-height:2">数据在本机浏览器，换设备用导出/导入搬运</div></div></div>
+
+</div>
+<nav class="tabs"><button class="on" onclick="go('home',this)"><span class="ic">📊</span>总览</button><button onclick="go('prod',this)"><span class="ic">📦</span>商品</button><button onclick="go('stock',this)"><span class="ic">📥</span>出入库</button><button onclick="go('dist',this)"><span class="ic">🤝</span>分销</button><button onclick="go('order',this)"><span class="ic">🧾</span>订单</button><button onclick="go('me',this)"><span class="ic">⚙️</span>我的</button></nav>
+<script>
+const K="axing_erp_v1";
+let DB=JSON.parse(localStorage.getItem(K)||'{}');
+function save(){localStorage.setItem(K,JSON.stringify(DB))}
+function today(){return new Date().toISOString().slice(0,10)}
+function now(){return new Date().toLocaleString()}
+function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function go(p,btn){document.querySelectorAll(".page").forEach(e=>e.classList.remove("on"));document.getElementById("p-"+p).classList.add("on");document.querySelectorAll(".tabs button").forEach(e=>e.classList.remove("on"));btn.classList.add("on");window.scrollTo(0,0);renderAll()}
+function exportData(){const blob=new Blob([JSON.stringify(DB,null,1)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="axing_erp_v1_backup_"+today()+".json";a.click()}
+function importData(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{DB=JSON.parse(r.result);save();renderAll();alert("导入成功")}catch(e){alert("文件不对")}};r.readAsText(f)}
+
+DB.products=DB.products||[];DB.flows=DB.flows||[];DB.dists=DB.dists||[];DB.orders=DB.orders||[];
+const PRE={"汽车挂饰":"QC","手机挂饰":"SJ","包包挂饰":"BB","衣服挂饰":"YF","宠物挂饰":"CW"};
+function genSku(cat){const p=PRE[cat]||"SP";const n=DB.products.filter(x=>x.sku.startsWith(p)).length+1;return p+"-"+String(n).padStart(4,"0")}
+function addProd(){const n=g("g-name").trim();if(!n)return alert("填品名");
+DB.products.push({id:Date.now(),sku:genSku(g("g-cat")),name:n,cat:g("g-cat"),
+cost:+g("g-cost")||0,price:+g("g-price")||0,stock:+g("g-stock")||0,low:+g("g-low")||5});
+g("g-name","");g("g-cost","");g("g-price","");g("g-stock","");save();renderAll()}
+function delProd(id){if(!confirm("删除商品？"))return;DB.products=DB.products.filter(p=>p.id!==id);save();renderAll()}
+function findP(id){return DB.products.find(p=>p.id===id)}
+function stockIO(dir){const p=findP(+g("s-sku"));const q=+g("s-qty")||0;if(!p||!q)return alert("选商品填数量");
+if(dir<0&&p.stock<q)return alert("库存不足：现"+p.stock);
+p.stock+=dir*q;DB.flows.unshift({sku:p.sku,name:p.name,qty:dir*q,type:dir>0?"入库":"出库",time:now()});
+save();renderAll();alert((dir>0?"入库":"出库")+" "+q+" 件完成")}
+function stockCheck(){const p=findP(+g("s-sku"));const a=+g("s-actual");if(!p||isNaN(a))return alert("选商品填实盘数");
+const diff=a-p.stock;p.stock=a;DB.flows.unshift({sku:p.sku,name:p.name,qty:diff,type:"盘点",time:now()});
+save();renderAll();alert("盘点完成：账面"+(p.stock-diff)+" → 实盘"+a+"（差异 "+diff+"）")}
+function addDist(){const n=g("d-name").trim();if(!n)return alert("填姓名");
+DB.dists.push({id:Date.now(),name:n,rate:+g("d-rate")||15,total:0});g("d-name","");save();renderAll()}
+function delDist(id){if(!confirm("删除分销商？"))return;DB.dists=DB.dists.filter(d=>d.id!==id);save();renderAll()}
+function addOrder(){const p=findP(+g("o-sku"));const d=DB.dists.find(d=>d.id==g("o-dist"));const q=+g("o-qty")||0;
+if(!p||!d||!q)return alert("选分销商和商品");
+if(p.stock<q)return alert("库存不足（现"+p.stock+"）");
+const price=+g("o-price")||p.price;const amount=+(price*q).toFixed(2);const comm=+(amount*d.rate/100).toFixed(2);
+p.stock-=q;DB.orders.unshift({id:Date.now(),dist:d.name,sku:p.sku,pname:p.name,qty:q,amount,comm,status:"待结算",time:now()});
+g("o-price","");save();renderAll();alert("订单已记：金额¥"+amount+" 佣金¥"+comm)}
+function settle(id){const o=DB.orders.find(o=>o.id===id);if(o.status==="已结算")return;
+o.status="已结算";const d=DB.dists.find(d=>d.name===o.dist);if(d)d.total=+(d.total+o.comm).toFixed(2);
+save();renderAll()}
+function delOrder(id){DB.orders=DB.orders.filter(o=>o.id!==id);save();renderAll()}
+function g(id,v){const e=document.getElementById(id);if(v===undefined)return e.value;e.value=v}
+function renderDash(){const low=DB.products.filter(p=>p.stock<=p.low);
+const pend=DB.orders.filter(o=>o.status==="待结算").reduce((s,o)=>s+o.comm,0);
+document.getElementById("dash").innerHTML=[["商品",DB.products.length],["库存总数",DB.products.reduce((s,p)=>s+p.stock,0)],
+["分销商",DB.dists.length],["待结佣金","¥"+pend.toFixed(0)],["预警",low.length+"个"],["订单",DB.orders.length]]
+.map(s=>`<div class="stat"><b>${s[1]}</b><span>${s[0]}</span></div>`).join("");
+document.getElementById("low-list").innerHTML=low.length?low.map(p=>
+`<div class="item">⚠️ ${esc(p.name)} <span class="tag warn">${p.sku} 剩${p.stock}/${p.low}</span></div>`).join(""):'<div class="empty">✅ 库存健康</div>'}
+function renderAll(){renderDash();
+document.getElementById("prod-list").innerHTML=DB.products.length?DB.products.map(p=>
+`<div class="item"><b>${esc(p.name)}</b> <span class="tag">${p.sku}</span><span class="tag">${p.cat}</span>
+${p.stock<=p.low?'<span class="tag warn">低库存</span>':''}
+<div class="m">成本¥${p.cost} 售价¥${p.price} 库存 ${p.stock}</div>
+<button class="btn sm red" onclick="delProd(${p.id})">删除</button></div>`).join(""):'<div class="empty">先添加商品</div>';
+const opts=DB.products.map(p=>`<option value="${p.id}">${p.sku} ${esc(p.name)}（存${p.stock}）</option>`).join("");
+document.getElementById("s-sku").innerHTML=opts;document.getElementById("o-sku").innerHTML=opts;
+document.getElementById("flow-list").innerHTML=DB.flows.slice(0,40).map(f=>
+`<div class="item">${f.type==="入库"?"🟢":f.type==="出库"?"🔴":"📋"} ${esc(f.name)} <b>${f.qty>0?"+":""}${f.qty}</b> <span class="m">${f.time}</span></div>`).join("")||'<div class="empty">暂无流水</div>';
+document.getElementById("dist-list").innerHTML=DB.dists.length?DB.dists.map(d=>
+`<div class="item"><b>${esc(d.name)}</b> <span class="tag">佣金${d.rate}%</span><span class="tag ok">累计已结 ¥${d.total.toFixed(2)}</span>
+<button class="btn sm red" onclick="delDist(${d.id})">删</button></div>`).join(""):'<div class="empty">添加分销商</div>';
+document.getElementById("o-dist").innerHTML=DB.dists.map(d=>`<option value="${d.id}">${esc(d.name)}（${d.rate}%）</option>`).join("");
+document.getElementById("order-open").innerHTML=DB.orders.filter(o=>o.status==="待结算").map(o=>
+`<div class="item">${esc(o.dist)} × ${esc(o.pname)} ×${o.qty} 佣金<b style="color:var(--gold)">¥${o.comm}</b>
+<button class="btn sm gold" onclick="settle(${o.id})">结算</button></div>`).join("")||'<div class="empty">✅ 全部结清</div>';
+document.getElementById("order-all").innerHTML=DB.orders.slice(0,30).map(o=>
+`<div class="item">${esc(o.dist)} ${esc(o.pname)} ×${o.qty} 金额¥${o.amount} 佣金¥${o.comm} <span class="tag ${o.status==="待结算"?"warn":"ok"}">${o.status}</span>
+<div class="m">${o.time}</div></div>`).join("")||'<div class="empty">暂无订单</div>'}
+renderAll();
+
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+</script></body></html>
